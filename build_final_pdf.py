@@ -8,7 +8,6 @@ Target Output: d:\final_end_game\report\MultiAgent_AI_DataLakehouse_Platform_Pro
 
 import os
 import sys
-import shutil
 from fpdf import FPDF
 
 class PerfectTableReportPDF(FPDF):
@@ -80,42 +79,31 @@ class PerfectTableReportPDF(FPDF):
         self.ln(4)
 
     def draw_styled_table(self, headers, rows_data, col_widths, align_list=None):
-        """
-        Renders a perfectly aligned, beautifully formatted PDF table.
-        - Dark navy header with bold white text
-        - Alternating light blue/gray row backgrounds
-        - Clean borders with exact line height wrapping
-        """
         self.set_line_width(0.3)
-        self.set_draw_color(203, 213, 225) # Slate 300
+        self.set_draw_color(203, 213, 225)
         
         if align_list is None:
             align_list = ["L"] * len(headers)
 
-        # Header Row
+        header_height = 8
         self.set_font("Helvetica", "B", 9.5)
-        self.set_fill_color(30, 41, 59) # Slate 800
+        self.set_fill_color(30, 41, 59)
         self.set_text_color(255, 255, 255)
         
-        # Calculate max line heights per cell to prevent overlapping
-        header_height = 8
         for i, h in enumerate(headers):
             clean_h = str(h).replace("—", "-").replace("➔", "->")
             self.cell(col_widths[i], header_height, f" {clean_h}", border=1, fill=True, new_x="RIGHT", new_y="TOP", align=align_list[i])
         self.ln(header_height)
 
-        # Data Rows
         self.set_font("Helvetica", "", 9)
-        self.set_text_color(51, 65, 85) # Slate 700
+        self.set_text_color(51, 65, 85)
         
         for r_idx, row in enumerate(rows_data):
-            # Alternating row fill color
             if r_idx % 2 == 0:
                 self.set_fill_color(255, 255, 255)
             else:
-                self.set_fill_color(248, 250, 252) # Slate 50
+                self.set_fill_color(248, 250, 252)
 
-            # Compute row height based on longest multi-line cell
             cell_text_clean = [str(val).replace("—", "-").replace("➔", "->") for val in row]
             max_lines = 1
             for i, text in enumerate(cell_text_clean):
@@ -124,11 +112,9 @@ class PerfectTableReportPDF(FPDF):
                     max_lines = lines
             row_h = max(7, max_lines * 5)
 
-            # Draw cells for current row
             x_start = self.get_x()
             y_start = self.get_y()
 
-            # Page break check
             if y_start + row_h > 275:
                 self.add_page()
                 y_start = self.get_y()
@@ -137,9 +123,7 @@ class PerfectTableReportPDF(FPDF):
             for i, text in enumerate(cell_text_clean):
                 cur_x = x_start + sum(col_widths[:i])
                 self.set_xy(cur_x, y_start)
-                # Background rect
                 self.rect(cur_x, y_start, col_widths[i], row_h, style="FD")
-                # Text inside
                 self.multi_cell(col_widths[i], 4.5, f" {text}", border=0, align=align_list[i])
 
             self.set_xy(x_start, y_start + row_h)
@@ -606,14 +590,8 @@ def consume_and_land_to_minio():
     output_pdf_path = os.path.join(BASE_PROJECT_DIR, "report", "MultiAgent_AI_DataLakehouse_Platform_Project_Report.pdf")
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
 
-    # Safe write with temp file fallback if primary is locked
-    try:
-        pdf.output(output_pdf_path)
-        print("Perfect Table Project Report PDF generated successfully at:", output_pdf_path)
-    except PermissionError:
-        temp_pdf_path = os.path.join(BASE_PROJECT_DIR, "report", "MultiAgent_AI_DataLakehouse_Platform_Project_Report_v2.pdf")
-        pdf.output(temp_pdf_path)
-        print("Primary file was locked. Generated successfully at temporary path:", temp_pdf_path)
+    pdf.output(output_pdf_path)
+    print("PDF report updated successfully at:", output_pdf_path)
 
 if __name__ == "__main__":
     build_pdf()
