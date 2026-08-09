@@ -1,0 +1,22 @@
+# Large binaries & JAR dependencies
+jars/
+*.jar
+*.zip
+myenv/
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Streamlit & IDE
+.streamlit/secrets.toml
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent AI Data Lakehouse Platform | Intelligence Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+            <div class="brand-titles">
+                <h1>Multi-Agent AI Data Lakehouse</h1>
+                <p>Betting Site Payment Intelligence & Agentic Orchestrator</p>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <!-- Global Website Selector -->
+            <div class="select-wrapper">
+                <i class="fa-solid fa-globe select-icon"></i>
+                <select id="siteSelect" onchange="onSiteChange(this.value)">
+                    <option value="All Sites">🌐 All Platforms Combined</option>
+                    <option value="Melbet">🎰 Melbet</option>
+                    <option value="22Bet">🎲 22Bet</option>
+                    <option value="10Cric">🏏 10Cric</option>
+                    <option value="1xBet">⚽ 1xBet</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateSitePDF()">
+                <i class="fa-solid fa-file-pdf"></i> Export Site PDF Report
+            </button>
+
+            <div class="status-badge">
+                <span class="pulse-dot"></span> SYSTEM ONLINE
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="dashboard-container">
+
+        <!-- Top Metric Cards Grid -->
+        <section class="metrics-grid">
+            <div class="metric-card glass-panel">
+                <div class="card-header">
+                    <span>Scraped Raw Files</span>
+                    <i class="fa-solid fa-file-code icon-blue"></i>
+                </div>
+                <div class="metric-value" id="valRawFiles">549</div>
+                <div class="metric-sub" id="subRawFiles">Raw JSON Payloads</div>
+            </div>
+
+            <div class="metric-card glass-panel">
+                <div class="card-header">
+                    <span>Extracted HTML Cards</span>
+                    <i class="fa-solid fa-layer-group icon-cyan"></i>
+                </div>
+                <div class="metric-value" id="valExtractedCards">109,897</div>
+                <div class="metric-sub">DOM Elements Parsed</div>
+            </div>
+
+            <div class="metric-card glass-panel">
+                <div class="card-header">
+                    <span>Clean Unique Methods</span>
+                    <i class="fa-solid fa-check-double icon-emerald"></i>
+                </div>
+                <div class="metric-value" id="valUniqueMethods">246</div>
+                <div class="metric-sub" id="subUniqueMethods">Silver Zone Entities</div>
+            </div>
+
+            <div class="metric-card glass-panel">
+                <div class="card-header">
+                    <span>Deduplication Rate</span>
+                    <i class="fa-solid fa-filter icon-purple"></i>
+                </div>
+                <div class="metric-value" id="valDeduplication">99.8%</div>
+                <div class="metric-sub" id="subDeduplication">109,651 Duplicates Dropped</div>
+            </div>
+
+            <div class="metric-card glass-panel">
+                <div class="card-header">
+                    <span>ML Anomalies Flagged</span>
+                    <i class="fa-solid fa-triangle-exclamation icon-rose"></i>
+                </div>
+                <div class="metric-value" id="valAnomalies">1,879</div>
+                <div class="metric-sub">Isolation Forest (5% Rate)</div>
+            </div>
+
+            <div class="metric-card glass-panel">
+                <div class="card-header">
+                    <span>Random Forest Acc</span>
+                    <i class="fa-solid fa-brain icon-amber"></i>
+                </div>
+                <div class="metric-value" id="valM1Acc">100.0%</div>
+                <div class="metric-sub">Classification Accuracy</div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('tab-scraping')">
+                <i class="fa-solid fa-diagram-project"></i> Lakehouse Flow & Scraping Data
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-ml')">
+                <i class="fa-solid fa-robot"></i> Machine Learning Analytics
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-agentic')">
+                <i class="fa-solid fa-user-gear"></i> Agentic AI Assistant
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-control')">
+                <i class="fa-solid fa-spider"></i> Scraper & Pipeline Trigger
+            </button>
+        </div>
+
+        <!-- TAB 1: LAKEHOUSE DATA FLOW & SCRAPING DATA -->
+        <div id="tab-scraping" class="tab-content active">
+            
+            <!-- Step-by-Step Lakehouse Data Flow Pipeline Visualizer -->
+            <div class="glass-panel pipeline-flow-panel">
+                <h3><i class="fa-solid fa-arrows-split-up-and-left"></i> Data Lakehouse Layer Processing Flow (<span id="flowSiteTitle">All Sites</span>)</h3>
+                <p class="section-desc">Shows step-by-step how raw scraped data is extracted, loaded, cleaned, and processed across Lakehouse layers.</p>
+
+                <div class="flow-steps-grid">
+                    <div class="flow-step-box">
+                        <div class="step-badge">LAYER 1</div>
+                        <h4><i class="fa-solid fa-box-archive icon-blue"></i> Bronze Parquet Zone</h4>
+                        <p class="step-desc">Stores <strong><span id="flowBronzeFiles">549</span> raw scraped JSON documents</strong> with unparsed HTML body (200KB-900KB/file).</p>
+
+                        <div class="step-stat">
+                            <span>Status:</span> <strong class="text-emerald">PERSISTED (MinIO)</strong>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+
+                    <div class="flow-step-box">
+                        <div class="step-badge">LAYER 2</div>
+                        <h4><i class="fa-solid fa-wand-magic-sparkles icon-emerald"></i> Silver Parquet Zone</h4>
+                        <p class="step-desc">Parses <code>&lt;div class="payment-cell"&gt;</code> DOM nodes, extracts <strong><span id="flowSilverCards">109,897</span> cards</strong>, repairs UTF-8, extracts UPI IDs (e.g. <code>teamcash@melbet</code>), and drops duplicates.</p>
+                        <div class="step-stat">
+                            <span>Cleaned Unique:</span> <strong class="text-cyan"><span id="flowUniqueCount">246</span> Records</strong>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+
+                    <div class="flow-step-box">
+                        <div class="step-badge">LAYER 3</div>
+                        <h4><i class="fa-solid fa-chart-line icon-purple"></i> Gold ML & RAG Zone</h4>
+                        <p class="step-desc">Constructs 6 feature vectors for ML models (Random Forest, Isolation Forest) and indexes 384-D embeddings into FAISS Vector DB.</p>
+                        <div class="step-stat">
+                            <span>FAISS Index:</span> <strong class="text-purple">384-D Normalized</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section Grid -->
+            <div class="charts-grid">
+                <div class="glass-panel chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fa-solid fa-chart-pie icon-cyan"></i> Payment Category Distribution</h3>
+                        <span class="badge" id="catBadge">Cleaned Silver Layer</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fa-solid fa-chart-column icon-emerald"></i> Top 10 Payment Methods</h3>
+                        <span class="badge">Occurrences</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="topMethodsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cleaned Payment Methods Data Table -->
+            <div class="glass-panel table-panel">
+                <div class="table-header">
+                    <h3><i class="fa-solid fa-table"></i> Cleaned Payment Accounts & Gateway Records</h3>
+                    <input type="text" id="tableSearch" placeholder="🔍 Search payment method, UPI ID, or bank..." onkeyup="filterTable()">
+                </div>
+                <div class="table-responsive">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Site Platform</th>
+                                <th>Payment Method Name</th>
+                                <th>Category</th>
+                                <th>Backend Agent</th>
+                                <th>UPI ID</th>
+                                <th>Bank Account</th>
+                                <th>IFSC Code</th>
+                                <th>Quality Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Dynamic Table Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 2: MACHINE LEARNING ANALYTICS -->
+        <div id="tab-ml" class="tab-content">
+            <div class="glass-panel">
+                <h3><i class="fa-solid fa-brain icon-amber"></i> Machine Learning & Anomaly Detection Outputs (<span id="mlSiteTitle">All Sites</span>)</h3>
+                <p class="section-desc">Evaluates Scikit-Learn models trained on Silver Lakehouse feature vectors.</p>
+
+                <div class="ml-models-grid">
+                    <!-- Model 1 Card -->
+                    <div class="ml-card">
+                        <div class="ml-badge badge-green">SUPERVISED CLASSIFICATION</div>
+                        <h4>Model 1: Random Forest Classifier</h4>
+                        <div class="ml-score">100.0% <span>Accuracy</span></div>
+                        <ul class="ml-details">
+                            <li><strong>Precision:</strong> 1.0000</li>
+                            <li><strong>Recall:</strong> 1.0000</li>
+                            <li><strong>F1 Score:</strong> 1.0000</li>
+                            <li><strong>Top Split Feature:</strong> <code>crypto_present</code> (48.5%)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Model 2 Card -->
+                    <div class="ml-card">
+                        <div class="ml-badge badge-rose">ANOMALY DETECTION</div>
+                        <h4>Model 2: Isolation Forest</h4>
+                        <div class="ml-score" id="mlOutlierVal">1,879 <span>Outliers</span></div>
+                        <ul class="ml-details">
+                            <li><strong>Normal Inliers:</strong> <span id="mlNormalVal">36,528</span> (95.1%)</li>
+                            <li><strong>Anomalous Outliers:</strong> <span id="mlAnomVal">1,879</span> (4.9%)</li>
+                            <li><strong>Contamination Rate:</strong> 5.0%</li>
+                            <li><strong>Flagged Issues:</strong> Unusual limit ranges / unverified gateways</li>
+                        </ul>
+                    </div>
+
+                    <!-- Model 3 Card -->
+                    <div class="ml-card">
+                        <div class="ml-badge badge-purple">UNSUPERVISED CLUSTERING</div>
+                        <h4>Model 3: K-Means Clustering</h4>
+                        <div class="ml-score">0.7678 <span>Silhouette Score</span></div>
+                        <ul class="ml-details">
+                            <li><strong>Optimal Clusters (K):</strong> 4 Clusters</li>
+                            <li><strong>Tier 1:</strong> Micro UPI Payments</li>
+                            <li><strong>Tier 2:</strong> Large-Cap Crypto Transfers</li>
+                            <li><strong>Tier 3:</strong> Institutional Bank Transfers</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="charts-grid" style="margin-top: 20px;">
+                    <div class="glass-panel chart-card">
+                        <h3><i class="fa-solid fa-ranking-star icon-amber"></i> Random Forest Feature Importance</h3>
+                        <div class="chart-container">
+                            <canvas id="featureImportanceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel chart-card">
+                        <h3><i class="fa-solid fa-circle-exclamation icon-rose"></i> Isolation Forest Anomaly Detection</h3>
+                        <div class="chart-container">
+                            <canvas id="anomalyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: AGENTIC AI ASSISTANT -->
+        <div id="tab-agentic" class="tab-content">
+            <div class="glass-panel agentic-container">
+                <div class="agentic-header">
+                    <div>
+                        <h3><i class="fa-solid fa-user-gear icon-emerald"></i> Agentic AI Autonomous Orchestrator</h3>
+                        <p class="section-desc">Intelligent Agent equipped with 8 tools & 9 capabilities to execute autonomous multi-step goals.</p>
+                    </div>
+                    <div class="agentic-status"><i class="fa-solid fa-circle-dot icon-emerald"></i> Orchestrator Active</div>
+                </div>
+
+                <!-- Suggested Questions / Goals -->
+                <div class="suggested-queries">
+                    <span class="suggest-label"><i class="fa-solid fa-lightbulb icon-amber"></i> Click Suggested Goal / Question:</span>
+                    <div class="query-pills">
+                        <button class="pill-btn" onclick="sendAgenticGoal('Analyze and process website https://melbet.com/paysystems/')">
+                            <i class="fa-solid fa-globe"></i> Process https://melbet.com/paysystems/
+                        </button>
+                        <button class="pill-btn" onclick="sendAgenticGoal('Detect all fraudulent/anomalous payment routes on 22Bet')">
+                            <i class="fa-solid fa-shield-cat"></i> Detect Fraud on 22Bet
+                        </button>
+                        <button class="pill-btn" onclick="sendAgenticGoal('Compare payment gateway adoption between 10Cric and Melbet')">
+                            <i class="fa-solid fa-code-compare"></i> Compare 10Cric vs Melbet
+                        </button>
+                        <button class="pill-btn" onclick="sendAgenticGoal('Generate full investigation PDF report for 1xBet')">
+                            <i class="fa-solid fa-file-pdf"></i> Generate PDF for 1xBet
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Agent Chat Conversation Display -->
+                <div class="chat-window" id="chatWindow">
+                    <div class="chat-bubble bot-bubble">
+                        <div class="bubble-header"><i class="fa-solid fa-robot"></i> Agentic AI Orchestrator</div>
+                        <div class="bubble-content">
+                            Hello! I am your Agentic AI Assistant. I can trigger web scrapers, process Lakehouse data, run ML anomaly models, query 384-D FAISS vectors, and generate PDF investigation reports.<br/><br/>
+                            <strong>Type any question or select a suggested goal above!</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Controls -->
+                <div class="chat-input-bar">
+                    <input type="text" id="agentInput" placeholder="Ask a question or enter website URL / goal (e.g. Process https://22bet.com)..." onkeydown="if(event.key==='Enter') sendAgenticGoal(this.value)">
+                    <button class="btn btn-primary" onclick="sendAgenticGoal(document.getElementById('agentInput').value)">
+                        <i class="fa-solid fa-paper-plane"></i> Execute Goal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: SCRAPER & PIPELINE CONTROL -->
+        <div id="tab-control" class="tab-content">
+            <div class="glass-panel">
+                <h3><i class="fa-solid fa-spider icon-cyan"></i> Automated Web Scraper & Pipeline Trigger</h3>
+                <p class="section-desc">Trigger new web scraping jobs and execute downstream Lakehouse ETL pipelines.</p>
+
+                <!-- Clarification Notice on Login & Credentials -->
+                <div class="info-banner">
+                    <div class="info-icon"><i class="fa-solid fa-circle-info icon-blue"></i></div>
+                    <div class="info-body">
+                        <h4>💡 How Website Scraping & Login Credentials Work:</h4>
+                        <p>• <strong>Most Betting Sites:</strong> 95% of payment method pages (e.g. <code>https://melbet.com/paysystems/</code>) are <strong>publicly accessible</strong>, so <strong>NO LOGIN IS REQUIRED</strong>!</p>
+                        <p>• <strong>If a Website Requires Login:</strong> You do <em>not</em> need to log in manually prior! Simply enter your target URL and optional username/password below. Our Playwright browser scraper will automatically log in, capture session cookies, and extract payment data hands-free!</p>
+                    </div>
+                </div>
+
+                <div class="control-form-grid">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-link"></i> Target Website URL:</label>
+                        <input type="text" id="scrapeUrl" value="https://melbet.com/paysystems/">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-tag"></i> Platform Name:</label>
+                        <input type="text" id="scrapeSiteName" value="Melbet">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-user"></i> Optional Username (if login required):</label>
+                        <input type="text" id="scrapeUser" placeholder="Optional username">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-key"></i> Optional Password (if login required):</label>
+                        <input type="password" id="scrapePass" placeholder="Optional password">
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-emerald btn-lg" onclick="triggerScraperRun()">
+                        <i class="fa-solid fa-play"></i> Start Scraper & Trigger Full Pipeline
+                    </button>
+                </div>
+
+                <div id="controlOutput" class="control-output-box" style="display:none; margin-top:20px;"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>

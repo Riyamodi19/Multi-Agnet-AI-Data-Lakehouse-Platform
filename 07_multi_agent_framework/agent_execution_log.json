@@ -1,0 +1,34 @@
+[
+    {
+        "correlation_id": "840d7dcb",
+        "goal": "Trigger Full Pipeline Automation",
+        "steps_executed": 5,
+        "details": [
+            {
+                "status": "SUCCESS",
+                "agent": "ScraperManager",
+                "result": "[Scraper Tool] Simulated Scrapy+Playwright crawl for Melbet. Status: 100% Complete."
+            },
+            {
+                "status": "SUCCESS",
+                "agent": "DataValidatorETL",
+                "result": "[Spark/Lakehouse ETL Tool] Ingested raw JSON into Bronze Parquet & cleaned 38,407 records into Silver Parquet."
+            },
+            {
+                "status": "SUCCESS",
+                "agent": "AnomalyDetector",
+                "result": "[ML Analysis Tool] Executed Random Forest (Accuracy: 100%), Isolation Forest (1,879 anomalies), K-Means (K=4)."
+            },
+            {
+                "status": "SUCCESS",
+                "agent": "RAGQueryHandler",
+                "result": "[RAG Tool] Answer: Based on the retrieved Silver Lakehouse context, on Melbet, you can pay using PayTM UPI (Other / General). UPI ID: teamcash@melbet. (Grounding Score: 50%)"
+            },
+            {
+                "status": "SUCCESS",
+                "agent": "ReportGenerator",
+                "result": "[Report Generator Tool] Compiled investigation PDF report in 'project description/' folder."
+            }
+        ]
+    }
+]

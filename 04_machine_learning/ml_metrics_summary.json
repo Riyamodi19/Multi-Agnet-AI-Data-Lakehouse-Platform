@@ -1,0 +1,9 @@
+{
+    "rf_accuracy": 0.72,
+    "rf_precision": 0.7466666666666666,
+    "rf_recall": 0.72,
+    "rf_f1_score": 0.699247311827957,
+    "anomaly_count": 13,
+    "normal_count": 233,
+    "kmeans_silhouette_score": 0.7012765859890691
+}
