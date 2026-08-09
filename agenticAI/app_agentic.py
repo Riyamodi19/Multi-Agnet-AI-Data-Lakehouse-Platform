@@ -2,7 +2,6 @@
 Agentic AI Dedicated Streamlit Dashboard App
 Target File: d:\final_end_game\agenticAI\app_agentic.py
 Run with: streamlit run agenticAI/app_agentic.py
-UI Design: Exact matching UI of app.py (Clean transparent title header, top title bar navigation, no sidebar, obsidian dark theme)
 """
 
 import os
@@ -14,9 +13,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-# Safe path resolution for imports
-BASE_DIR = r"d:\final_end_game"
-AGENTIC_DIR = os.path.join(BASE_DIR, "agenticAI")
+# Relative Path Resolution (Cross-Platform Windows & Linux)
+AGENTIC_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.join(AGENTIC_DIR, ".."))
+
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 if AGENTIC_DIR not in sys.path:
@@ -25,7 +25,10 @@ if AGENTIC_DIR not in sys.path:
 try:
     from agentic_orchestrator import MasterAgenticOrchestrator
 except ImportError:
-    from agenticAI.agentic_orchestrator import MasterAgenticOrchestrator
+    try:
+        from agenticAI.agentic_orchestrator import MasterAgenticOrchestrator
+    except ImportError:
+        MasterAgenticOrchestrator = None
 
 SILVER_UNIQUE_PATH = os.path.join(BASE_DIR, "lakehouse", "warehouse", "storage", "silver", "silver_unique_cleaned.parquet")
 SILVER_ALL_PATH = os.path.join(BASE_DIR, "lakehouse", "warehouse", "storage", "silver", "silver_cleaned_payments.parquet")
@@ -51,7 +54,7 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
-    /* Transparent Header Container (No Background Box!) */
+    /* Transparent Header Container */
     .clean-header-container {
         padding: 4px 0px 16px 0px;
         margin-bottom: 12px;
@@ -129,18 +132,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     
-    /* Info Cards (Purple/Teal Left Border) */
-    .info-card {
-        background: #161D2A;
-        border-left: 3px solid #A855F7;
-        padding: 14px 18px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        color: #94A3B8;
-        font-size: 0.88rem;
-        line-height: 1.5;
-    }
-    
     /* Architecture Box */
     .arch-box {
         background: #121826;
@@ -155,7 +146,6 @@ st.markdown("""
     .tool-list { color: #38BDF8; margin-bottom: 12px; }
     .cap-list { color: #34D399; }
     
-    /* Section Headers */
     .section-title {
         font-size: 1.35rem;
         font-weight: 700;
@@ -182,17 +172,15 @@ def load_datasets():
 def render_agentic_app():
     df_unique, df_all = load_datasets()
 
-    # Initialize Orchestrator in Session State
-    if 'orchestrator' not in st.session_state:
-        st.session_state.orchestrator = MasterAgenticOrchestrator()
+    if 'orchestrator' not in st.session_state and MasterAgenticOrchestrator is not None:
+        try:
+            st.session_state.orchestrator = MasterAgenticOrchestrator()
+        except Exception:
+            st.session_state.orchestrator = None
 
     if 'agent_history' not in st.session_state:
         st.session_state.agent_history = []
 
-    # ---------------------------------------------------------
-    # CLEAN TRANSPARENT HEADER BANNER (NO BACKGROUND BOX!)
-    # MATCHING APP.PY UI DESIGN
-    # ---------------------------------------------------------
     st.markdown("""
     <div class="clean-header-container">
         <div class="clean-title">🕵️ Agentic AI Autonomous Orchestrator & Payment Intelligence</div>
@@ -201,14 +189,11 @@ def render_agentic_app():
             <span class="clean-flow-text">Real Scraper ➔ Spark ETL ➔ MinIO Lakehouse ➔ Scikit-Learn ML Retraining ➔ FAISS RAG</span>
         </div>
         <div class="clean-desc">
-            An autonomous multi-agent AI system equipped with 8 tools and 9 capabilities. It automatically scrapes new betting websites, cleans payment gateway cards into MinIO Silver tables, retrains Scikit-Learn models, and generates zero-hallucination investigation reports.
+            An autonomous multi-agent AI system equipped with 8 tools and 9 capabilities.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ---------------------------------------------------------
-    # TOP TITLE BAR NAVIGATION & WEBSITE FILTER CONTROLS
-    # ---------------------------------------------------------
     st.markdown('<div class="top-nav-box">', unsafe_allow_html=True)
     nav_col1, nav_col2, nav_col3 = st.columns([2.2, 1, 1])
 
@@ -218,28 +203,24 @@ def render_agentic_app():
         page_selection = st.radio(
             "Navigation Menu:",
             ["📊 Overview & Pipeline", "🍩 Payment Landscape", "🎯 Risk Intelligence & ML", "🕵️ Agentic AI Assistant"],
-            index=3,  # Default to Agentic AI Assistant
+            index=0,
             horizontal=True,
-            key="agentic_top_nav_radio"
+            key="agentic_top_nav_radio_v9"
         )
 
     with nav_col2:
-        existing_site = st.selectbox("Select Betting Website Filter:", available_sites_list, index=0, key="agentic_top_nav_site")
+        existing_site = st.selectbox("Select Betting Website Filter:", available_sites_list, index=0, key="agentic_top_nav_site_v9")
 
     with nav_col3:
-        new_site_input = st.text_input("➕ New Website Filter:", placeholder="e.g. Parimatch, Stake", value="", key="agentic_top_nav_new_site")
+        new_site_input = st.text_input("➕ New Website Filter:", placeholder="e.g. Parimatch, Stake", value="", key="agentic_top_nav_new_site_v9")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Active Website Selection Logic
     if new_site_input.strip():
         active_site = new_site_input.strip()
-        is_new_site = True
     else:
         active_site = existing_site
-        is_new_site = False
 
-    # Filter Datasets
     if active_site == "All Sites":
         df_filtered_u = df_unique
         df_filtered_a = df_all
@@ -247,18 +228,7 @@ def render_agentic_app():
         df_filtered_u = df_unique[df_unique['site_name'].str.lower() == active_site.lower()] if (len(df_unique) > 0 and 'site_name' in df_unique.columns) else df_unique
         df_filtered_a = df_all[df_all['site_name'].str.lower() == active_site.lower()] if (len(df_all) > 0 and 'site_name' in df_all.columns) else df_all
 
-    # Automatic Real Scraping & Retraining for New Website
-    if is_new_site and len(df_filtered_u) == 0:
-        st.info(f"⚡ New website '{active_site}' detected! Agentic AI Orchestrator is executing real web scraper & Scikit-Learn ML retraining...")
-        run_res = st.session_state.orchestrator.execute_pipeline_for_new_site(active_site)
-        st.session_state.agent_history.append(run_res)
-        df_unique, df_all = load_datasets()
-        df_filtered_u = df_unique[df_unique['site_name'].str.lower() == active_site.lower()]
-        df_filtered_a = df_all[df_all['site_name'].str.lower() == active_site.lower()]
-
-    # ---------------------------------------------------------
-    # PAGE 1: OVERVIEW & PIPELINE
-    # ---------------------------------------------------------
+    # PAGE 1: OVERVIEW
     if page_selection == "📊 Overview & Pipeline":
         st.markdown(f'<div class="section-title">📊 System Overview & Real Scraped Data ({active_site})</div>', unsafe_allow_html=True)
         st.markdown('<div class="section-desc">Extracted payment records in MinIO Silver Lakehouse Parquet storage.</div>', unsafe_allow_html=True)
@@ -271,14 +241,12 @@ def render_agentic_app():
         st.markdown("---")
         st.markdown(f"### 📋 Real Payment Records Table ({active_site})")
         display_cols = [c for c in ['site_name', 'payment_method_name', 'category', 'data_agent', 'upi_id', 'bank_account', 'ifsc_code'] if c in df_filtered_u.columns]
-        if len(display_cols) > 0:
+        if len(display_cols) > 0 and len(df_filtered_u) > 0:
             st.dataframe(df_filtered_u[display_cols], use_container_width=True)
         else:
             st.dataframe(df_filtered_u, use_container_width=True)
 
-    # ---------------------------------------------------------
     # PAGE 2: PAYMENT LANDSCAPE
-    # ---------------------------------------------------------
     elif page_selection == "🍩 Payment Landscape":
         st.markdown(f'<div class="section-title">Payment Landscape ({active_site})</div>', unsafe_allow_html=True)
         st.markdown('<div class="section-desc">Category distributions and real gateway usage breakdown</div>', unsafe_allow_html=True)
@@ -337,89 +305,6 @@ def render_agentic_app():
                 xaxis=dict(title=dict(text="Usage Frequency Count", font=dict(color='#8A99AD')), gridcolor='rgba(255,255,255,0.05)', range=[0, max(top_df['Count']) * 1.18 if len(top_df)>0 else 100])
             )
             st.plotly_chart(fig_bar, use_container_width=True)
-
-    # ---------------------------------------------------------
-    # PAGE 3: RISK INTELLIGENCE & ML
-    # ---------------------------------------------------------
-    elif page_selection == "🎯 Risk Intelligence & ML":
-        st.markdown(f'<div class="section-title">🎯 Risk Intelligence & Real-Time ML Retraining ({active_site})</div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-desc">Scikit-Learn Random Forest Classification & Isolation Forest Anomaly Detection retrained live.</div>', unsafe_allow_html=True)
-        
-        ml_eval = st.session_state.orchestrator.retrainer.train_models(df_unique, active_site)
-        
-        m1, m2, m3 = st.columns(3)
-        m1.metric("RANDOM FOREST ACCURACY", ml_eval['random_forest_accuracy'])
-        m2.metric("ANOMALIES DETECTED", f"{ml_eval['isolation_forest_anomalies']}")
-        m3.metric("REAL RECORDS TRAINED", f"{ml_eval['total_records_trained']}")
-        
-        st.markdown('<div class="section-title">Random Forest — Feature Importance</div>', unsafe_allow_html=True)
-        df_feat = pd.DataFrame({'Feature': ml_eval['feature_names'], 'Importance': ml_eval['feature_importances']})
-        
-        fig_feat = go.Figure(go.Bar(
-            x=df_feat['Importance'], y=df_feat['Feature'], orientation='h',
-            marker=dict(color='#C084FC'), text=[f"{v:.1f}%" for v in df_feat['Importance']],
-            textposition='outside', textfont=dict(color='#FFFFFF', size=12)
-        ))
-        fig_feat.update_layout(
-            title=dict(text=f"Feature Importance ({active_site})", font=dict(color='#FFFFFF', size=14)),
-            xaxis=dict(title=dict(text="Importance (%)", font=dict(color='#8A99AD')), tickfont=dict(color='#8A99AD'), gridcolor='rgba(255,255,255,0.05)', range=[0, max(ml_eval['feature_importances'])+15]),
-            yaxis=dict(tickfont=dict(color='#FFFFFF')), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=340
-        )
-        st.plotly_chart(fig_feat, use_container_width=True)
-
-    # ---------------------------------------------------------
-    # PAGE 4: AGENTIC AI ASSISTANT
-    # ---------------------------------------------------------
-    elif page_selection == "🕵️ Agentic AI Assistant":
-        st.markdown(f'<div class="section-title">🕵️ Master Agentic AI Orchestrator Panel</div>', unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="arch-box">
-            <div class="arch-title">⚡ AGENTIC AI ORCHESTRATOR ARCHITECTURE</div>
-            <div style="margin-bottom: 10px; color: #FFFFFF;"><b>ONE Intelligent Agent</b></div>
-            <div class="tool-list">
-                <b>Available Tools (8 Tools):</b><br>
-                • Real Scraper Tool &nbsp;&nbsp;&nbsp; • Spark ETL Tool &nbsp;&nbsp;&nbsp; • Iceberg Query Tool &nbsp;&nbsp;&nbsp; • ML Retraining Tool<br>
-                • Vector Search Tool &nbsp;&nbsp;&nbsp; • RAG Tool &nbsp;&nbsp;&nbsp; • Report Generator &nbsp;&nbsp;&nbsp; • Dashboard Tool
-            </div>
-            <div class="cap-list">
-                <b>Agent Capabilities (9 Capabilities):</b><br>
-                ✓ Scrape New Betting Site &nbsp;&nbsp;&nbsp; ✓ Process New Data &nbsp;&nbsp;&nbsp; ✓ Detect Fraud/Anomalies<br>
-                ✓ Compare Betting Sites &nbsp;&nbsp;&nbsp; ✓ Search Similar Payment Pages &nbsp;&nbsp;&nbsp; ✓ Generate Investigation Reports<br>
-                ✓ Answer Natural Language Questions &nbsp;&nbsp;&nbsp; ✓ Explain ML Predictions &nbsp;&nbsp;&nbsp; ✓ Trigger Entire Pipeline Automatically
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("### 🚀 Trigger Real Agentic Scraper & Scikit-Learn Model Retraining")
-        target_site_run = st.text_input("Enter Target Website Name to Analyze:", value=active_site if active_site != "All Sites" else "Parimatch", key="agent_run_input_v2")
-        
-        if st.button("⚡ Run Full Agentic AI Pipeline", type="primary", key="agent_run_btn_v2"):
-            with st.spinner(f"Agentic Orchestrator scraping & retraining Scikit-Learn ML models for '{target_site_run}'..."):
-                res = st.session_state.orchestrator.execute_pipeline_for_new_site(target_site_run)
-                st.session_state.agent_history.append(res)
-                
-                st.success(f"Agentic AI Pipeline completed for '{target_site_run}'!")
-                
-                st.markdown("#### 📜 Live Agent Execution Log:")
-                for log_line in res["execution_log"]:
-                    st.code(log_line, language="text")
-                    
-                pdf_path = res["report_path"]
-                st.info(f"📄 Investigation Report generated at: `{pdf_path}`")
-
-        st.markdown("---")
-        
-        st.markdown("### 💬 Ask Agentic AI Natural Language Questions")
-        user_q = st.text_input("Ask any question about payment methods, fraud risk, or ML predictions:", value="What are the top payment gateways and risk anomalies for this site?", key="agent_q_input_v2")
-        
-        if st.button("🔎 Submit Question to Agent", key="agent_q_btn_v2"):
-            st.markdown(f"**🤖 Agent Response:** Payment records for '{active_site}' contain clean UPI endpoints and Crypto gateways. Scikit-Learn Random Forest achieved high accuracy with zero hallucination verification.")
-            st.markdown(f"**🔎 FAISS Semantic Top Matches:**")
-            st.json([
-                {"site": active_site, "method": f"PhonePe Direct ({active_site})", "similarity": 0.952},
-                {"site": active_site, "method": f"Tether TRC-20 ({active_site})", "similarity": 0.921}
-            ])
 
 if __name__ == "__main__":
     render_agentic_app()

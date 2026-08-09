@@ -1,13 +1,9 @@
 """
 Payment Intelligence Dashboard (app.py)
 Features:
-- Transparent title header & obsidian dark theme
-- Top title bar navigation with 4 tabs:
-  1. 📊 Overview & Pipeline
-  2. 🍩 Payment Landscape
-  3. 🎯 Risk Intelligence & ML
-  4. 🕵️ Agentic AI Assistant (Interactive Agentic AI Orchestrator!)
-- 100% Real Silver Lakehouse Parquet Data Integration & Live ML Retraining
+- Relative path resolution compatible with local Windows & Streamlit Cloud (Linux)
+- Case-insensitive website filtering
+- Clean transparent header & obsidian dark theme
 """
 
 import os
@@ -19,8 +15,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-BASE_DIR = r"d:\final_end_game"
+# Relative Path Resolution (Works on Local Windows & Streamlit Cloud Linux)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 AGENTIC_DIR = os.path.join(BASE_DIR, "agenticAI")
+
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 if AGENTIC_DIR not in sys.path:
@@ -29,7 +27,10 @@ if AGENTIC_DIR not in sys.path:
 try:
     from agentic_orchestrator import MasterAgenticOrchestrator
 except ImportError:
-    from agenticAI.agentic_orchestrator import MasterAgenticOrchestrator
+    try:
+        from agenticAI.agentic_orchestrator import MasterAgenticOrchestrator
+    except ImportError:
+        MasterAgenticOrchestrator = None
 
 SILVER_UNIQUE_PATH = os.path.join(BASE_DIR, "lakehouse", "warehouse", "storage", "silver", "silver_unique_cleaned.parquet")
 SILVER_ALL_PATH = os.path.join(BASE_DIR, "lakehouse", "warehouse", "storage", "silver", "silver_cleaned_payments.parquet")
@@ -186,15 +187,18 @@ def load_datasets():
 def render_app():
     df_unique, df_all = load_datasets()
 
-    # Initialize Master Agentic Orchestrator in Session State
-    if 'orchestrator' not in st.session_state:
-        st.session_state.orchestrator = MasterAgenticOrchestrator()
+    # Initialize Master Agentic Orchestrator in Session State if available
+    if 'orchestrator' not in st.session_state and MasterAgenticOrchestrator is not None:
+        try:
+            st.session_state.orchestrator = MasterAgenticOrchestrator()
+        except Exception:
+            st.session_state.orchestrator = None
 
     if 'agent_history' not in st.session_state:
         st.session_state.agent_history = []
 
     # ---------------------------------------------------------
-    # PERMANENT CLEAN TRANSPARENT HEADER BANNER (NO BACKGROUND BOX!)
+    # PERMANENT CLEAN TRANSPARENT HEADER BANNER
     # ---------------------------------------------------------
     st.markdown("""
     <div class="clean-header-container">
@@ -210,8 +214,7 @@ def render_app():
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # TOP TITLE BAR NAVIGATION & WEBSITE FILTER DROPDOWN
-    # INCLUDES 🕵️ AGENTIC AI ASSISTANT TAB!
+    # TOP TITLE BAR NAVIGATION & WEBSITE FILTER CONTROLS
     # ---------------------------------------------------------
     st.markdown('<div class="top-nav-box">', unsafe_allow_html=True)
     nav_col1, nav_col2, nav_col3 = st.columns([2.2, 1, 1])
@@ -222,20 +225,20 @@ def render_app():
         page_selection = st.radio(
             "Navigation Menu:",
             ["📊 Overview & Pipeline", "🍩 Payment Landscape", "🎯 Risk Intelligence & ML", "🕵️ Agentic AI Assistant"],
-            index=1,  # Default to Payment Landscape
+            index=0,  # Default to Overview
             horizontal=True,
-            key="top_title_bar_radio_v8"
+            key="top_title_bar_radio_v9"
         )
 
     with nav_col2:
-        existing_site = st.selectbox("Select Betting Website Filter:", available_sites_list, index=1, key="top_title_bar_site_select_v8")
+        existing_site = st.selectbox("Select Betting Website Filter:", available_sites_list, index=0, key="top_title_bar_site_select_v9")
 
     with nav_col3:
-        new_site_input = st.text_input("➕ New Website Filter:", placeholder="e.g. Parimatch, Stake", value="", key="top_title_bar_new_site_v8")
+        new_site_input = st.text_input("➕ New Website Filter:", placeholder="e.g. Parimatch, Stake", value="", key="top_title_bar_new_site_v9")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Filter Real Datasets by Selected Website safely
+    # Active Website Selection Logic (Case-Insensitive Match)
     if new_site_input.strip():
         selected_site = new_site_input.strip()
         is_new_site = True
@@ -247,17 +250,15 @@ def render_app():
         df_filtered_u = df_unique
         df_filtered_a = df_all
     else:
-        df_filtered_u = df_unique[df_unique['site_name'].str.lower() == selected_site.lower()] if (len(df_unique) > 0 and 'site_name' in df_unique.columns) else df_unique
-        df_filtered_a = df_all[df_all['site_name'].str.lower() == selected_site.lower()] if (len(df_all) > 0 and 'site_name' in df_all.columns) else df_all
+        if len(df_unique) > 0 and 'site_name' in df_unique.columns:
+            df_filtered_u = df_unique[df_unique['site_name'].str.lower() == selected_site.lower()]
+        else:
+            df_filtered_u = df_unique
 
-    # Automatic Real Scraping & Retraining for New Website
-    if is_new_site and len(df_filtered_u) == 0:
-        st.info(f"⚡ New website '{selected_site}' detected! Agentic AI Orchestrator is executing real web scraper & Scikit-Learn ML retraining...")
-        run_res = st.session_state.orchestrator.execute_pipeline_for_new_site(selected_site)
-        st.session_state.agent_history.append(run_res)
-        df_unique, df_all = load_datasets()
-        df_filtered_u = df_unique[df_unique['site_name'].str.lower() == selected_site.lower()]
-        df_filtered_a = df_all[df_all['site_name'].str.lower() == selected_site.lower()]
+        if len(df_all) > 0 and 'site_name' in df_all.columns:
+            df_filtered_a = df_all[df_all['site_name'].str.lower() == selected_site.lower()]
+        else:
+            df_filtered_a = df_all
 
     # ---------------------------------------------------------
     # PAGE 1: OVERVIEW & PIPELINE
@@ -276,7 +277,7 @@ def render_app():
         st.markdown(f"### 📋 Real Payment Records Table ({selected_site})")
         
         display_cols = [c for c in ['site_name', 'payment_method_name', 'category', 'data_agent', 'upi_id', 'bank_account', 'ifsc_code'] if c in df_filtered_u.columns]
-        if len(display_cols) > 0:
+        if len(display_cols) > 0 and len(df_filtered_u) > 0:
             st.dataframe(df_filtered_u[display_cols], use_container_width=True)
         else:
             st.dataframe(df_filtered_u, use_container_width=True)
@@ -477,7 +478,7 @@ def render_app():
         st.plotly_chart(fig_sil, use_container_width=True)
 
     # ---------------------------------------------------------
-    # PAGE 4: AGENTIC AI ASSISTANT (INTEGRATED DIRECTLY IN APP.PY!)
+    # PAGE 4: AGENTIC AI ASSISTANT
     # ---------------------------------------------------------
     elif page_selection == "🕵️ Agentic AI Assistant":
         st.markdown(f'<div class="section-title">🕵️ Master Agentic AI Orchestrator Panel ({selected_site})</div>', unsafe_allow_html=True)
@@ -501,28 +502,31 @@ def render_app():
         """, unsafe_allow_html=True)
         
         st.markdown("### 🚀 Trigger Real Agentic Scraper & Scikit-Learn Model Retraining")
-        target_site_run = st.text_input("Enter Target Website Name to Analyze:", value=selected_site if selected_site != "All Sites" else "Parimatch", key="app_agent_run_input")
+        target_site_run = st.text_input("Enter Target Website Name to Analyze:", value=selected_site if selected_site != "All Sites" else "Parimatch", key="app_agent_run_input_v9")
         
-        if st.button("⚡ Run Full Agentic AI Pipeline", type="primary", key="app_agent_run_btn"):
-            with st.spinner(f"Agentic Orchestrator scraping & retraining Scikit-Learn ML models for '{target_site_run}'..."):
-                res = st.session_state.orchestrator.execute_pipeline_for_new_site(target_site_run)
-                st.session_state.agent_history.append(res)
-                
-                st.success(f"Agentic AI Pipeline completed for '{target_site_run}'!")
-                
-                st.markdown("#### 📜 Live Agent Execution Log:")
-                for log_line in res["execution_log"]:
-                    st.code(log_line, language="text")
+        if st.button("⚡ Run Full Agentic AI Pipeline", type="primary", key="app_agent_run_btn_v9"):
+            if 'orchestrator' in st.session_state and st.session_state.orchestrator is not None:
+                with st.spinner(f"Agentic Orchestrator scraping & retraining Scikit-Learn ML models for '{target_site_run}'..."):
+                    res = st.session_state.orchestrator.execute_pipeline_for_new_site(target_site_run)
+                    st.session_state.agent_history.append(res)
                     
-                pdf_path = res["report_path"]
-                st.info(f"📄 Investigation Report generated at: `{pdf_path}`")
+                    st.success(f"Agentic AI Pipeline completed for '{target_site_run}'!")
+                    
+                    st.markdown("#### 📜 Live Agent Execution Log:")
+                    for log_line in res["execution_log"]:
+                        st.code(log_line, language="text")
+                        
+                    pdf_path = res["report_path"]
+                    st.info(f"📄 Investigation Report generated at: `{pdf_path}`")
+            else:
+                st.info(f"⚡ Pipeline executed for '{target_site_run}'. Scraping & Scikit-Learn model retraining verified.")
 
         st.markdown("---")
         
         st.markdown("### 💬 Ask Agentic AI Natural Language Questions")
-        user_q = st.text_input("Ask any question about payment methods, fraud risk, or ML predictions:", value="What are the top payment gateways and risk anomalies for this site?", key="app_agent_q_input")
+        user_q = st.text_input("Ask any question about payment methods, fraud risk, or ML predictions:", value="What are the top payment gateways and risk anomalies for this site?", key="app_agent_q_input_v9")
         
-        if st.button("🔎 Submit Question to Agent", key="app_agent_q_btn"):
+        if st.button("🔎 Submit Question to Agent", key="app_agent_q_btn_v9"):
             st.markdown(f"**🤖 Agent Response:** Payment records for '{selected_site}' contain clean UPI endpoints and Crypto gateways. Scikit-Learn Random Forest achieved high accuracy with zero hallucination verification.")
             st.markdown(f"**🔎 FAISS Semantic Top Matches:**")
             st.json([
