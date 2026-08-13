@@ -181,7 +181,7 @@ def load_datasets():
         # Wallet
         if any(k in cat or k in method for k in ['wallet', 'skrill', 'neteller', 'muchbetter', 'jeton', 'astropay', 'ezeewallet', 'perfect money']):
             return 'WALLET'
-        return 'OTHERS'
+        return 'OTHER'
 
     if len(df_u) > 0 and 'category' in df_u.columns:
         df_u['category'] = df_u.apply(map_cat, axis=1)
