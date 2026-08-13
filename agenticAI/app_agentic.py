@@ -167,6 +167,27 @@ st.markdown("""
 def load_datasets():
     df_u = pd.read_parquet(SILVER_UNIQUE_PATH) if os.path.exists(SILVER_UNIQUE_PATH) else pd.DataFrame()
     df_a = pd.read_parquet(SILVER_ALL_PATH) if os.path.exists(SILVER_ALL_PATH) else df_u
+
+    def map_cat(row):
+        cat = str(row.get('category', '')).lower()
+        method = str(row.get('payment_method_name', '')).lower()
+        
+        # Crypto
+        if any(k in cat or k in method for k in ['crypto', 'cryptocurrency', 'usdt', 'btc', 'eth', 'xrp', 'ltc', 'doge', 'shiba', 'cardano', 'digibyte', 'tether', 'bitcoin', 'ethereum', 'tron', 'bsc']):
+            return 'CRYPTO'
+        # UPI
+        if any(k in method for k in ['upi', 'phonepe', 'gpay', 'paytm direct', 'bhim', 'google pay']):
+            return 'UPI'
+        # Wallet
+        if any(k in cat or k in method for k in ['wallet', 'skrill', 'neteller', 'muchbetter', 'jeton', 'astropay', 'ezeewallet', 'perfect money']):
+            return 'WALLET'
+        return 'OTHERS'
+
+    if len(df_u) > 0 and 'category' in df_u.columns:
+        df_u['category'] = df_u.apply(map_cat, axis=1)
+    if len(df_a) > 0 and 'category' in df_a.columns:
+        df_a['category'] = df_a.apply(map_cat, axis=1)
+        
     return df_u, df_a
 
 def render_agentic_app():

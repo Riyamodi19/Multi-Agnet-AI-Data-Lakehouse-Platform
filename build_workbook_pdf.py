@@ -180,18 +180,18 @@ def build_pdf():
 
     # SLIDE 6
     pdf.add_page()
-    pdf.slide_header("6", "The 8-Agent Platform Architecture")
+    pdf.slide_header("6", "The 6-Agent Platform Architecture")
     pdf.section_label("What It Is")
-    pdf.section_body("The multi-agent design dividing responsibilities across specialized software agents.")
+    pdf.section_body("The multi-agent design dividing responsibilities across 6 specialized software agents.")
     pdf.section_label("How It Works")
-    pdf.section_body("Coordination: Agent 1 Scrapes -> Agent 2 Streams -> Agent 3 Spark Cleans -> Agent 4 ML Runs -> Agent 5 FAISS Indexes -> Agent 6 RAG -> Agent 7 Verifies -> Agent 8 UI Dashboard.")
+    pdf.section_body("Coordination: Agent 1 Scrapes -> Agent 2 Streams -> Agent 3 Spark Cleans -> Agent 4 ML Runs -> Agent 5 RAG Agent (FAISS + LLM) -> Agent 6 UI Dashboard. Note: Verification Agent runs silently in the backend.")
     pdf.section_label("Why This")
-    pdf.section_body("Modularity. If a website selector breaks, we only edit Agent 1's rules without touching the ML classification in Agent 4 or the LLM in Agent 6.")
+    pdf.section_body("Modularity. If a website selector breaks, we only edit Agent 1's rules without touching the ML classification in Agent 4 or the RAG in Agent 5.")
     pdf.section_label("Why Not Other")
     pdf.section_body("Traditional monolithic architectures merge all code into one giant script, making debugging difficult and increasing system failure risk.")
     pdf.section_label("Spoken Script")
     pdf.spoken_script_box(
-        "Our platform divides responsibilities across eight specialized agents: Agent 1 scrapes data, Agent 2 streams it, Agent 3 cleans it, Agent 4 runs machine learning, Agent 5 manages vector search, Agent 6 runs our local RAG assistant, Agent 7 audits answers, and Agent 8 serves as our Streamlit orchestrator UI."
+        "Our platform divides responsibilities across six specialized agents: Agent 1 scrapes data, Agent 2 streams it, Agent 3 cleans it, Agent 4 runs machine learning, Agent 5 handles semantic vector RAG with Llama 3, and Agent 6 serves as our master UI orchestrator. Our verification check runs implicitly in the background to ensure data security."
     )
 
     # SLIDE 7

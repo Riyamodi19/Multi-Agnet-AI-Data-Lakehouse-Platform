@@ -242,10 +242,8 @@ def build_pdf():
         ("   5.2 Agent 2 - Streaming & Storage Agent", "11"),
         ("   5.3 Agent 3 - Processing & Analytics Agent", "12"),
         ("   5.4 Agent 4 - Machine Learning Agent", "12"),
-        ("   5.5 Agent 5 - Semantic Retrieval Agent", "12"),
-        ("   5.6 Agent 6 - RAG & Generation Agent", "13"),
-        ("   5.7 Agent 7 - Verification Agent", "13"),
-        ("   5.8 Agent 8 - Presentation Agent", "13"),
+        ("   5.5 Agent 5 - RAG & Semantic Retrieval Agent", "12"),
+        ("   5.6 Agent 6 - Presentation & Orchestrator Agent", "13"),
         ("6. Module Descriptions & Pseudo-code", "15"),
         ("7. Data Flow & Storage Artifacts", "17"),
         ("8. Implementation Details", "18"),
@@ -425,41 +423,23 @@ def build_pdf():
             ["Evaluation Metrics", "Random Forest: 84.8% Acc | Isolation Forest: 17 Anomalies | K-Means: 7 Clusters (0.932 Silhouette)"]
         ], "Agent 4 trains Random Forest (84.8% accuracy), per-site Isolation Forest (17 flagged anomalies), and K-Means behavioural clustering (0.932 Silhouette Score)."),
 
-        ("5.5 Agent 5: Semantic Retrieval Agent (Sentence-Transformers & FAISS)", [
-            ["Agent Name", "Agent 5: Semantic Retrieval Agent"],
-            ["Primary Purpose", "Convert payment records to natural language summaries and build a dense 384-D vector index"],
-            ["Input Artifacts", "161 cleaned payment records from Silver Lakehouse storage"],
-            ["Output Artifacts", "161 x 384-dimensional FAISS binary vector index (IndexFlatL2)"],
-            ["Core Technology", "Sentence-Transformers (all-MiniLM-L6-v2), FAISS (faiss-cpu)"],
-            ["Vector Schema", "384-D dense embeddings generated locally on 161 payment summaries"]
-        ], "Agent 5 converts payment records into text descriptions, generates 384-D embeddings via all-MiniLM-L6-v2, and indexes them in FAISS IndexFlatL2 for sub-millisecond similarity search."),
+        ("5.5 Agent 5: RAG & Semantic Retrieval Agent (FAISS + Llama 3)", [
+            ["Agent Name", "Agent 5: RAG & Semantic Retrieval Agent"],
+            ["Primary Purpose", "Answer user queries grounded strictly in FAISS vector database records using local Llama 3"],
+            ["Core Technology", "Sentence-Transformers (all-MiniLM-L6-v2), FAISS, LangChain RAG, Ollama Llama 3"],
+            ["Grounding Rules", "Strict prompt anchoring with dual verification (py_ok & llm_ok) running silently in the backend"],
+            ["Input Artifacts", "User natural language queries & clean Silver Parquet data"],
+            ["Output Artifacts", "Verified grounded natural language responses with 0% hallucinations"]
+        ], "Agent 5 generates 384-D text embeddings, indexes them in FAISS, and runs a LangChain RAG pipeline using local Llama 3 via Ollama. It applies a two-stage verification check (Python regex match + LLM context audit) in the backend to ensure zero factual errors."),
 
-        ("5.6 Agent 6: RAG & Generation Agent (LangChain & Ollama / Llama 3)", [
-            ["Agent Name", "Agent 6: RAG & Generation Agent"],
-            ["Primary Purpose", "Answer user natural language questions grounded strictly in retrieved FAISS vector evidence"],
-            ["Input Artifacts", "User query & top K retrieved FAISS payment evidence blocks"],
-            ["Output Artifacts", "Grounded natural language draft answers"],
-            ["Core Technology", "LangChain RAG Framework, Ollama Local Runtime, Llama 3 LLM"],
-            ["Grounding Rules", "Answer strictly restricted to retrieved context; zero cloud API costs"]
-        ], "Agent 6 retrieves top FAISS evidence, formats a strict LangChain prompt, and invokes local Llama 3 via Ollama to generate grounded answers without cloud API costs."),
-
-        ("5.7 Agent 7: Verification Agent (Two-Stage Dual Validation)", [
-            ["Agent Name", "Agent 7: Verification Agent"],
-            ["Primary Purpose", "Dual-evaluate draft LLM answers to confirm 100% factual alignment with database evidence"],
-            ["Input Artifacts", "Draft LLM answer & retrieved FAISS evidence context"],
-            ["Output Artifacts", "Verified final answer with dual (py_ok and llm_ok) validation status"],
-            ["Core Technology", "Python Regex & String Matching Engine, Independent LLM Evidence Checker"],
-            ["Verification Logic", "Stage 1: Python checks concrete entities | Stage 2: LLM evaluates draft answer alignment"]
-        ], "Agent 7 executes a two-stage verification check (Python concrete entity check + LLM context audit check) to eliminate AI hallucinations."),
-
-        ("5.8 Agent 8: Presentation & Master Orchestration Agent (Streamlit UI)", [
-            ["Agent Name", "Agent 8: Presentation & Master Orchestration Agent"],
-            ["Primary Purpose", "Expose an interactive Streamlit UI, track risk metrics & orchestrate end-to-end pipeline tools"],
-            ["Input Artifacts", "Lakehouse Parquet tables, ML model metrics, FAISS vector index, user inputs"],
-            ["Output Artifacts", "Obsidian Dark Web UI, persistent configuration (custom_sites.json), PDF reports"],
+        ("5.6 Agent 6: Master Orchestration & Presentation Agent (Streamlit UI)", [
+            ["Agent Name", "Agent 6: Master Orchestration & Presentation Agent"],
+            ["Primary Purpose", "Expose an interactive Streamlit UI console and orchestrate backend data pipeline tools"],
             ["Core Technology", "Streamlit 1.30+, FPDF2, Master Orchestrator (8 Tools, 9 Capabilities)"],
-            ["Key Features", "Top navigation bar, persistent site filters across page reloads (F5), 8 tools & 9 capabilities"]
-        ], "Agent 8 serves as the Streamlit command center equipped with 8 tools and 9 capabilities, persistent site dropdown filters across page reloads (F5), and automated PDF report generation.")
+            ["Key Features", "Top navigation bar, persistent website filters, one-click PDF report generation"],
+            ["Input Artifacts", "Lakehouse Parquet tables, ML model metrics, RAG outputs, user inputs"],
+            ["Output Artifacts", "Obsidian Dark UI, custom_sites.json configuration, downloadable audit reports"]
+        ], "Agent 6 serves as the Streamlit command center dashboard. It orchestrates the end-to-end data pipeline, saves custom site filters persistently across page reloads (F5) to custom_sites.json, and exports formatted audit PDF reports on-demand.")
     ]
 
     for title, table_rows, desc in agents_data:
