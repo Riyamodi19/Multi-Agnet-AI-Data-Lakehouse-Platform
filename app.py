@@ -38,7 +38,7 @@ CUSTOM_SITES_PATH = os.path.join(BASE_DIR, "lakehouse", "custom_sites.json")
 
 # Streamlit Page Config (Sidebar Collapsed & Hidden)
 st.set_page_config(
-    page_title="Multi-Agent AI Data Lakehouse Platform",
+    page_title="Multi-Agent AI Data Lakehouse & Payment Analytics Platform",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -424,7 +424,7 @@ def render_app():
     # PERMANENT CLEAN TRANSPARENT HEADER BANNER
     st.markdown("""
     <div class="clean-header-container">
-        <div class="clean-title">⚡ Multi-Agent AI Data Lakehouse & Payment Intelligence Platform</div>
+        <div class="clean-title">⚡ Multi-Agent AI Data Lakehouse & Payment Analytics Platform</div>
         <div class="clean-status-container">
             <span class="clean-status-pill">● PIPELINE ACTIVE</span>
             <span class="clean-flow-text">Web Scraping ➔ Kafka Streaming ➔ MinIO Lakehouse ➔ Scikit-Learn ML ➔ FAISS Vector DB ➔ Multi-Agent AI</span>
