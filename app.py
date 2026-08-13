@@ -563,12 +563,18 @@ def render_app():
             if len(df_filtered_u) > 0 and 'category' in df_filtered_u.columns:
                 cat_counts = df_filtered_u['category'].value_counts().reset_index()
                 cat_counts.columns = ['Category', 'Count']
+                
+                # Enforce exact sorting order: CRYPTO, UPI, WALLET, OTHER
+                cat_order = ['CRYPTO', 'UPI', 'WALLET', 'OTHER']
+                cat_counts['Category'] = pd.Categorical(cat_counts['Category'], categories=cat_order, ordered=True)
+                cat_counts = cat_counts.dropna(subset=['Category']).sort_values('Category').reset_index(drop=True)
+                
                 fig_donut = px.pie(
                     cat_counts, values='Count', names='Category', hole=0.45,
-                    color_discrete_sequence=['#5EEAD4', '#38BDF8', '#A855F7', '#FBBF24', '#F43F5E']
+                    color_discrete_sequence=['#5EEAD4', '#38BDF8', '#A855F7', '#FBBF24']
                 )
             else:
-                cat_df = pd.DataFrame({'Category': ['Crypto', 'E-Wallet / UPI', 'Bank Transfer', 'Payment Cards'], 'Percentage': [54.4, 32.2, 9.8, 3.6]})
+                cat_df = pd.DataFrame({'Category': ['CRYPTO', 'UPI', 'WALLET', 'OTHER'], 'Percentage': [54.4, 32.2, 9.8, 3.6]})
                 fig_donut = px.pie(
                     cat_df, values='Percentage', names='Category', hole=0.45,
                     color_discrete_sequence=['#5EEAD4', '#38BDF8', '#A855F7', '#FBBF24']
@@ -581,22 +587,25 @@ def render_app():
             st.markdown(f"### 🏆 Top Payment Gateways ({selected_site})")
             
             if len(df_filtered_a) > 0 and 'payment_method_name' in df_filtered_a.columns:
+                total_a = len(df_filtered_a)
                 top_df = df_filtered_a['payment_method_name'].value_counts().head(10).reset_index()
                 top_df.columns = ['Method', 'Count']
+                top_df['Percentage'] = (top_df['Count'] / total_a) * 100
             else:
                 top_df = pd.DataFrame({
                     'Method': ['UPI Direct', 'SHIBA INU on BSC', 'Tether on BSC', 'Airtel Pay', 'DigiByte', 'USD Coin on Optimism', 'Cardano', 'UPI Intent', 'Skrill', 'USD Coin on Ethereum'],
                     'Count': [1077, 498, 482, 481, 480, 479, 479, 478, 472, 472]
                 })
+                top_df['Percentage'] = (top_df['Count'] / 3333) * 100
             
-            top_df['Count'] = pd.to_numeric(top_df['Count'], errors='coerce').fillna(0).astype(int)
-            top_df = top_df.sort_values(by='Count', ascending=True)
-            top_df['CountStr'] = top_df['Count'].astype(str)
+            top_df['Percentage'] = pd.to_numeric(top_df['Percentage'], errors='coerce').fillna(0).astype(float)
+            top_df = top_df.sort_values(by='Percentage', ascending=True)
+            top_df['CountStr'] = top_df['Percentage'].apply(lambda x: f"{x:.1f}%")
             
             distinct_colors = ['#5EEAD4', '#38BDF8', '#A855F7', '#FBBF24', '#F43F5E', '#34D399', '#6366F1', '#EC4899', '#10B981', '#F59E0B']
             
             fig_bar = px.bar(
-                top_df, x='Count', y='Method', orientation='h',
+                top_df, x='Percentage', y='Method', orientation='h',
                 color='Method',
                 color_discrete_sequence=distinct_colors,
                 text='CountStr'
@@ -608,7 +617,7 @@ def render_app():
                 font_color='#FFFFFF',
                 showlegend=False,
                 yaxis={'categoryorder':'total ascending'},
-                xaxis=dict(title=dict(text="Extracted Usage Frequency (Occurrence Count)", font=dict(color='#8A99AD')), gridcolor='rgba(255,255,255,0.05)', range=[0, max(top_df['Count']) * 1.18 if len(top_df)>0 else 100])
+                xaxis=dict(title=dict(text="Percentage Share (%)", font=dict(color='#8A99AD')), gridcolor='rgba(255,255,255,0.05)', range=[0, max(top_df['Percentage']) * 1.18 if len(top_df)>0 else 100])
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
